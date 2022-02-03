@@ -4,6 +4,13 @@ Presentation: [here](https://docs.google.com/presentation/d/1l64bae2wUjhHpXCadO7
 
 Link to the video will be posted soon.
 
+## Further Reading:
+
+1. [Ansible and Terraform together](https://www.hashicorp.com/resources/ansible-terraform-better-together)
+2. [IaC](https://www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac)
+3. [Ansible Docs](https://docs.ansible.com/) 
+4. [Ansible Galaxy](https://galaxy.ansible.com/) 
+
 ## Instructions
 
 1. Modify the Vagrant file and set the IP addresses to some available IPs in your network. This is important because if you choose DHCP they will change and mess with your inventory.
