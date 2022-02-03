@@ -1,0 +1,98 @@
+# 1. install telegraf
+# 2. create inputs
+# 3. create output to prometheus
+# https://docs.influxdata.com/telegraf/v1.21/introduction/installation/
+---
+- hosts: web_servers
+  become: true
+  vars:
+    telegraf_config_dir: /etc/telegraf/telegraf.d
+  handlers:
+    - name: daemon reload
+      service:
+        daemon_reload: true
+
+    - name: reload service
+      service:
+        name: telegraf
+        state: reloaded
+
+  tasks:
+    - name: add apt key
+      apt_key:
+        state: present
+        url: https://repos.influxdata.com/influxdb.key
+        validate_certs: true
+
+    - name: add telegraf repository
+      apt_repository:
+        repo: "deb https://repos.influxdata.com/{{ ansible_lsb.id|lower }} {{ ansible_lsb.codename|lower }} stable"
+        state: present
+        filename: /etc/apt/sources.list.d/influxdb.list
+
+    - name: install telegraf
+      package:
+        state: present
+        name: telegraf
+
+    - name: create telegraf user
+      ansible.builtin.user:
+        name: telegraf
+        create_home: false
+        home: /etc/telegraf
+        shell: /bin/false
+        state: present
+        system: false
+        uid: 997
+
+    - name: create telegraf config dir
+      file:  # explain file = directory
+        state: directory
+        path: "{{ telegraf_config_dir }}"
+        group: telegraf
+        owner: telegraf
+        mode: u=rwx,g=rx,o=rx
+
+    - name: create telegraf inputs
+      notify: reload service
+      template:  # explain template vs copy vs file
+        src: inputs.conf.j2
+        dest: "{{ telegraf_config_dir }}/inputs.conf"
+        group: telegraf
+        owner: telegraf
+        mode: 0600
+
+    - name: create telegraf output
+      notify: reload service
+      template:
+        src: outputs.conf.j2
+        dest: "{{ telegraf_config_dir }}/outputs.conf"
+        group: telegraf
+        owner: telegraf
+        mode: 0600
+
+    - name: clear the default telegraf config file
+      notify: reload service
+      copy:
+        dest: /etc/telegraf/telegraf.conf
+        group: telegraf
+        owner: telegraf
+        mode: 0600
+        content: ""
+
+    - name: create telegraf service
+      notify:
+        - daemon reload
+        - reload service
+      template:
+        src: telegraf.service.j2
+        dest: /lib/systemd/system/telegraf.service
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: enable and start telegraf
+      service:
+        name: telegraf
+        state: started
+        enabled: true

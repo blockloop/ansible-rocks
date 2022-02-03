@@ -1,0 +1,58 @@
+---
+- hosts: prometheus
+  become: true
+  vars:
+    prometheus_version: 2.33.0
+    prometheus_dir: /var/lib/prometheus
+  handlers:
+    - name: daemon reload
+      systemd:
+        daemon_reload: true
+
+    - name: restart service
+      service:
+        name: prometheus.service
+        state: restarted
+  tasks:
+    - name: create the prometheus directory
+      ansible.builtin.file:
+        state: directory
+        path: "{{ prometheus_dir }}"
+        mode: 0700
+        group: root
+        owner: root
+        unsafe_writes: false
+
+    - name: install prometheus
+      notify: restart service
+      ansible.builtin.unarchive:
+        dest: "{{ prometheus_dir }}"
+        src: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+        remote_src: true
+        creates: "{{ prometheus_dir }}/prometheus.yml"
+        exclude:
+          - NOTICE
+          - LICENSE
+        # the --strip=1 flag is for the tar command that will remove the first directory in the archive so that the files are flattened
+        extra_opts: "--strip=1"
+        mode: 0700
+        group: root
+        owner: root
+
+    - name: create systemd unit
+      notify:
+        - daemon reload
+        - restart service
+      ansible.builtin.template:
+        src: prometheus.service.j2
+        dest: /etc/systemd/system/prometheus.service
+        group: root
+        owner: root
+        mode: 0600
+
+
+    - name: enable and start prometheus
+      service:
+        name: prometheus.service
+        state: started
+        enabled: true

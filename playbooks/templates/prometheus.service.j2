@@ -1,0 +1,17 @@
+## THIS FILE IS MANAGED BY ANSIBLE
+[Unit]
+Description=Prometheus - time series database
+
+[Service]
+Environment=HOME={{ prometheus_dir }}
+ExecStart={{ prometheus_dir }}/prometheus --config.file={{ prometheus_dir }}/prometheus.yml --web.enable-remote-write-receiver
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+SystemCallArchitectures=native
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

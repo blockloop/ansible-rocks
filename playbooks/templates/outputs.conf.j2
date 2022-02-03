@@ -1,0 +1,7 @@
+[[outputs.http]]
+  url = "http://{{ hostvars.prometheus.ansible_host }}:9090/api/v1/write"
+  data_format = "prometheusremotewrite"
+  [outputs.http.headers]
+     Content-Type = "application/x-protobuf"
+     Content-Encoding = "snappy"
+     X-Prometheus-Remote-Write-Version = "0.1.0"
