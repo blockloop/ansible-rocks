@@ -1,5 +1,7 @@
 This is a demo project I gave at northdallas.net on Feb 2 2022.
 
+Presentation: [here](https://docs.google.com/presentation/d/1l64bae2wUjhHpXCadO7S3f5Q5S156LOw7CoYFNkdVbU/edit#slide=id.p)
+
 Link to the video will be posted soon.
 
 ## Instructions
